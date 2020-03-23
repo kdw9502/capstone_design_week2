@@ -8,7 +8,7 @@ const port = 8000;
 
 
 const get_callback = function (req, res) {
-    let json_data = req.params;
+    let json_data = req.query;
     json_data = add_additional_date(json_data,req);
 
     res.send(json_data)
