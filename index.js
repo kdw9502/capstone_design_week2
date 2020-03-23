@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
+app.use(bodyParser.text());
 const port = 8000;
 
 
@@ -16,6 +17,7 @@ const get_callback = function (req, res) {
 
 const post_callback = function (req,res)
 {
+    console.log(req.body)
     let json_data = req.body;
     json_data = add_additional_date(json_data,req);
 
@@ -24,7 +26,7 @@ const post_callback = function (req,res)
 
 const add_additional_date = function (original_json,req)
 {
-    let json_data = original_json;
+    let json_data = typeof original_json === 'string' ? JSON.parse(original_json) : original_json;
     json_data["email"] = "kdw9502@gmail.com";
     json_data["stuno"] = "20141494";
 
