@@ -42,5 +42,6 @@ const add_additional_date = function (original_json,req)
 
 app.post('/', post_callback);
 app.get('/get', get_callback);
+app.get('/', get_callback);
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
