@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
+util =  require('util');
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
@@ -37,9 +38,8 @@ const add_additional_date = function (original_json, req) {
 
     return json_data
 };
-
-const mysql = require('mysql');
-const mysql_test = function () {
+mysql = require('mysql');
+const mysql_select_all = function (callback) {
     var connection = mysql.createConnection(
         {
             host: '18.232.93.89',
@@ -50,16 +50,53 @@ const mysql_test = function () {
     )
     connection.connect();
 
-    connection.query('SELECT * from test;', function (error, results, fields) {
-        if (error) throw error;
-        console.log('The solution is: ', results);
+    connection.query('SELECT * from temperature;', function (error, results, fields) {
+        connection.end();
+        callback(results);
     })
-    connection.end();
+
 };
+
+fs = require('fs');
+const get_graph = function(req, res)
+{
+    mysql_callback = function() {
+
+        fs.readFile('./template.html', function (error, html) {
+            mysql_select_all(function (results) {
+                html = html.toString();
+
+
+                let header = "data.addColumn('date', 'Date/Time');";
+                header += "data.addColumn('number', 'Temperature');";
+
+                var data = "";
+                var comma = ""
+                for (var i = 0; i < results.length; i++) {
+                    r = results[i];
+                    date = r.datetime
+                    data += comma + util.format("[new Date(%s,%s,%s,%s),%i]", date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), r.temperature);
+                    comma = ",";
+                }
+
+
+                html = html.replace("{HEADER}", header);
+                html = html.replace("{TABLE}", data);
+
+                res.writeHeader(200, {"Content-Type": "text/html"});
+                res.write(html);
+                res.end();
+            })
+
+
+        });
+    };
+    mysql_select_all(mysql_callback);
+}
 
 app.post('/', post_callback);
 app.get('/get', get_callback);
 app.get('/', get_callback);
-app.get('/test', mysql_test);
+app.get('/graph', get_graph);
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
